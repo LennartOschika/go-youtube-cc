@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"log"
+	"io"
 	"net/http"
 	"regexp"
 )
@@ -12,7 +12,7 @@ import (
 type Format string
 
 const (
-	FormatSBV  Format = "VTT"
+	FormatSBV  Format = "SBV"
 	FormatSCC  Format = "SCC"
 	FormatSRT  Format = "SRT"
 	FormatTTML Format = "TTML"
@@ -25,8 +25,6 @@ func DownloadVideo(link string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	defer resp.Body.Close()
 
 	return resp, nil
 }
@@ -67,14 +65,10 @@ func ExtractSubtitleURL(response *http.Response) (string, error) {
 	return baseUrl, nil
 }
 
-/*func BuildDownloadLinks(baseLink string, formats ...Format) ([]string, error) {
-
-}*/
-
 // Get subtitles
 // Does everything
-func GetSubtitles(link string, parse bool, formats ...Format) ([]string, error) {
-	response, err := DownloadVideo(link)
+func GetSubtitles(videoLink string, formats ...Format) ([]parsedSubtitle, error) {
+	response, err := DownloadVideo(videoLink)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +78,30 @@ func GetSubtitles(link string, parse bool, formats ...Format) ([]string, error) 
 		return nil, err
 	}
 
-	log.Println(baseURL)
-	return nil, nil
+	//TODO: implement different formats
+	fullLink := baseURL + "&fmt=vtt"
+	resp, err := http.Get(fullLink)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	subtitleString := string(b)
+
+	parsedSubtitles, err := parseSubtitleString(subtitleString, FormatVTT)
+
+	return parsedSubtitles, nil
 	//Build full URL
 	//Download subtitle file(s)
 	//Parse subtitle files
+}
 
+func main() {
+	GetSubtitles("https://www.youtube.com/watch?v=gisdyTBMNyQ")
 }
