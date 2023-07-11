@@ -1,4 +1,4 @@
-package main
+package subtitles
 
 import "encoding/xml"
 
