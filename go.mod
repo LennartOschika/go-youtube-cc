@@ -1,4 +1,4 @@
-module github.com/go-youtube-cc
+module github.com/LennartOschika/go-youtube-cc
 
 go 1.20
 
