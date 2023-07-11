@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"io"
 	"net/http"
 	"regexp"
 )
@@ -79,22 +78,13 @@ func GetSubtitles(videoLink string, formats ...Format) ([]parsedSubtitle, error)
 	}
 
 	//TODO: implement different formats
-	fullLink := baseURL + "&fmt=vtt"
+	fullLink := baseURL + "&fmt=TTML"
 	resp, err := http.Get(fullLink)
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	subtitleString := string(b)
-
-	parsedSubtitles, err := parseSubtitleString(subtitleString, FormatVTT)
+	parsedSubtitles, err := parseSubtitleResponse(resp, FormatTTML)
 
 	return parsedSubtitles, nil
 	//Build full URL
@@ -103,5 +93,8 @@ func GetSubtitles(videoLink string, formats ...Format) ([]parsedSubtitle, error)
 }
 
 func main() {
-	GetSubtitles("https://www.youtube.com/watch?v=gisdyTBMNyQ")
+	//Manual: https://www.youtube.com/watch?v=Q85l1Fenc5w
+	//Auto generated: https://www.youtube.com/watch?v=6QQYUnSegaU&t=613s
+	GetSubtitles("https://www.youtube.com/watch?v=6QQYUnSegaU&t=613s")
+
 }
